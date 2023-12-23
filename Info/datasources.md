@@ -1,0 +1,1 @@
+Data source is a query of the AWS API to receive information needed to deploy a resource
