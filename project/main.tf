@@ -65,7 +65,7 @@ resource "aws_security_group" "alpha_sg" {
     from_port   = 0                    # represents the starting port for the rule. It's set to 0, meaning the rule applies to traffic starting from port 0.
     to_port     = 0                    # This represents the ending port for the rule. It's set to 0, indicating that the rule applies to traffic up to port 0.
     protocol    = "-1"                 # means all protocols are allowed. -1 is a wildcard that matches all protocols.
-    cidr_blocks = ["89.115.20.168/32"] # for multiple IPs use ["1.1.1.1/32", "2.2.2.0/24"]
+    cidr_blocks = ["0.0.0.0/32"]       # for multiple IPs use ["1.1.1.1/32", "2.2.2.0/24"], before 0.0.0.0/0 was the public IP
   }
 
   egress { # outgoing  traffic
