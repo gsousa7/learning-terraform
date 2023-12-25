@@ -1,0 +1,1 @@
+`terraform console` and inside type `aws_instance.dev_node.public_ip`

@@ -95,13 +95,13 @@ resource "aws_instance" "dev_node" {
 
   # Configure ~./ssh/config to insert info
   provisioner "local-exec" {
-    command = templatefile("linux-ssh-config.tpl", {
+    command = templatefile("${var.host_os}-ssh-config.tpl", {
       host         = self.tags.Name,
       hostname     = self.public_ip,
       user         = "ubuntu",
       identityfile = "~/.ssh/awskey",
     })
-    interpreter = ["bash", "-c"]
+    interpreter = var.host_os == "windows" ? ["Powershell", "-Command"] : ["bash", "-c"]
   }
 
   # Collect the public IP and place it in a file  
