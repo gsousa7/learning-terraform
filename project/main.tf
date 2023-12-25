@@ -61,11 +61,11 @@ resource "aws_security_group" "alpha_sg" {
   description = "dev security group"
   vpc_id      = aws_vpc.alpha_vpc.id
 
-  ingress {                            #incoming traffic
-    from_port   = 0                    # represents the starting port for the rule. It's set to 0, meaning the rule applies to traffic starting from port 0.
-    to_port     = 0                    # This represents the ending port for the rule. It's set to 0, indicating that the rule applies to traffic up to port 0.
-    protocol    = "-1"                 # means all protocols are allowed. -1 is a wildcard that matches all protocols.
-    cidr_blocks = ["0.0.0.0/32"]       # for multiple IPs use ["1.1.1.1/32", "2.2.2.0/24"], before 0.0.0.0/0 was the public IP
+  ingress {                     #incoming traffic
+    from_port   = 0             # represents the starting port for the rule. It's set to 0, meaning the rule applies to traffic starting from port 0.
+    to_port     = 0             # This represents the ending port for the rule. It's set to 0, indicating that the rule applies to traffic up to port 0.
+    protocol    = "-1"          # means all protocols are allowed. -1 is a wildcard that matches all protocols.
+    cidr_blocks = ["0.0.0.0/0"] # for multiple IPs use ["1.1.1.1/32", "2.2.2.0/24"], before 0.0.0.0/0 was the public IP
   }
 
   egress { # outgoing  traffic
@@ -73,5 +73,45 @@ resource "aws_security_group" "alpha_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_key_pair" "alpha_auth" {
+  key_name   = "awskey"
+  public_key = file("~/.ssh/awskey.pub")
+}
+
+resource "aws_instance" "dev_node" {
+  instance_type          = "t2.micro"
+  ami                    = data.aws_ami.server_ami.id
+  key_name               = aws_key_pair.alpha_auth.id
+  vpc_security_group_ids = [aws_security_group.alpha_sg.id]
+  subnet_id              = aws_subnet.alpha_subnet.id
+  user_data              = file("userdata.tpl")
+
+  root_block_device {
+    volume_size = 8
+  }
+
+  # Configure ~./ssh/config to insert info
+  provisioner "local-exec" {
+    command = templatefile("linux-ssh-config.tpl", {
+      host         = self.tags.Name,
+      hostname     = self.public_ip,
+      user         = "ubuntu",
+      identityfile = "~/.ssh/awskey",
+    })
+    interpreter = ["bash", "-c"]
+  }
+
+  # Collect the public IP and place it in a file  
+  provisioner "local-exec" {
+    command = <<-EOT
+      echo "${self.tags.Name}: ${self.public_ip}" > instance_ip.txt
+    EOT
+  }
+
+  tags = {
+    Name = "dev-node"
   }
 }

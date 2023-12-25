@@ -1,0 +1,1 @@
+Variables makes the script more organized and dynamic
