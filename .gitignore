@@ -1,5 +1,5 @@
 **/.terraform/*
 **/*.tfstate
 **/*.tfstate.*
-project/.terraform.lock.hcl
 **/*.txt
+project/.terraform.lock.hcl
