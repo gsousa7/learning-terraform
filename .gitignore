@@ -2,4 +2,4 @@
 **/*.tfstate
 **/*.tfstate.*
 **/*.txt
-project/.terraform.lock.hcl
+foundations/project/.terraform.lock.hcl
