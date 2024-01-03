@@ -4,7 +4,7 @@
 2. [Terraform init](#tfinit)
 3. [Terraform Depency Lock](#tfdep)
 4. [Terraform Apply](#tfapply)
-    4.1. [Docker pull image via Terraform](#dockerpullimgtf)
+    1. [Docker pull image via Terraform](#dockerpullimgtf)
 
 ## Docker provider <a name="dockerprovider"></a>
 ```
