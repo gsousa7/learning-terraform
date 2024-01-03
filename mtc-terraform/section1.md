@@ -1,5 +1,12 @@
 # Terraform Terminology
-## How terraform works
+1. [How Terraform works](#tfexplained)
+2. [Core Terraform workflow](#tfworkflow)
+3. [Terraform State](#tfstate)
+4. [IaC Workflow](#iacworkflow)
+5. [Declarative vs Imperial](#declarativevsimperial)
+6. [Terraform vs CloudFormation](#tfvscloudformation)
+
+## How terraform works <a name="tfexplained"></a>
 - Written in Golang
 - Interfaces with the API of the "provider" -> Provider = GCP, AWS, Azure, etc.
 - Create
@@ -17,25 +24,25 @@ in docker is equal to
 
 ```docker pull nodered/node-red:latest```
 
-## Core Terraform Workflow
+## Core Terraform Workflow <a name="tfworkflow"></a>
 1. Code
 2. Plan
     - Validate the code that syntax is correct and a brief summary of what will be deployed
 3. Apply
     - Deploys the desired code
 
-## Terraform State
+## Terraform State <a name="tfstate"></a>
 - Stores information about the current environment
 - Is created based on the configuration files and any changes are committed to the infrastructure via API
     - Only knows about resources created by it. If those resources are missing, it can replace, but cannot see other resources
 
-## IaC Workflow
+## IaC Workflow <a name="iacworkflow"></a>
 1. Terraform code
 2. Git repository
 3. CI/CD tools
     - Deploys Infrastructure
 
-## Declarative vs Imperial
+## Declarative vs Imperial <a name="declarativevsimperial"></a>
 | Declarative | Imperial |
 | ----------- | ----------- |
 | What do you want the final deployment to look like | How do you want to deploy resources |
@@ -45,7 +52,7 @@ in docker is equal to
 | Idempotent | Running an operation twice will still perform the operation, regardless of its previous execution or the damage it can cause|
 | Primary Terraform operation | Terraform can perform imperative tasks, but it is best practice to keep the code as declarative as possible |
 
-## Terraform vs CloudFormation
+## Terraform vs CloudFormation <a name="tfvscloudformation"></a>
 | Terraform | CloudFormation |
 | ----------- | ----------- |
 | Open source | Closed source |
