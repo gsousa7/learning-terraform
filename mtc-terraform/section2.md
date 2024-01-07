@@ -2,9 +2,10 @@
 
 1. [Docker provider](#dockerprovider)
 2. [Terraform init](#tfinit)
-3. [Terraform Depency Lock](#tfdep)
+3. [Terraform Dependency Lock](#tfdep)
 4. [Terraform Apply](#tfapply)
     1. [Docker pull image via Terraform](#dockerpullimgtf)
+5. [Terraform Plan and Apply - Deep dive](#tfplanapply)]
 
 ## Docker provider <a name="dockerprovider"></a>
 ```
@@ -52,3 +53,40 @@ To upgrade the patch version use
   name = "nodered/node-red:latest"
 }
 ```
+
+## Terraform Plan and Apply - Deep dive <a name="tfplanapply"></a>
+`terraform plan` describes what will be deployed and brief summary of configurations
+  We can also create a plan with `terraform plan -out=plan1` and apply it with `terraform apply plan1`. The content of the file `plan1` is encoded
+`terraform destroy` will delete the existing infrastructure deployed
+`terraform fmt` will correct indentation and spacing
+
+## Resource referencing 
+```
+ terraform {
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 2.15.0"
+    }
+  }
+}
+
+  resource "docker_image" "nodered_image" {
+    name = "nodered/node-red:latest"
+}
+
+  resource "docker_container" "nodered_container {
+    name = "nodered"
+    image = docker_image.nodered_image.latest
+    ports {
+        internal = 1880 
+        external = 1880
+    }
+  }
+```
+In the  `docker_container` `section:
+- `name` is the name of the container
+- `image` is the name of the image that we will use. `docker_image.nodered_image` is referencing the resource `docker_image` that has the name `nodered_image` and the `latest` is the ID of the image
+- `port` is what ports we will use and mapping
+  - `internal` port of the container
+  - `external` port of the host
