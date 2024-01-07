@@ -1,6 +1,9 @@
 # Learning Terraform
 
-This is learning lab is separated in 2: "Terraform Foundations" from More than Certified in YouTube and "More than Certified in Terraform" from More than Certified in Udemy.
+This is learning lab is separated in 3: 
+1. "Terraform Foundations" from More than Certified in YouTube - Learn Terraform basics
+2. "More than Certified in Terraform" from More than Certified in Udemy - Master Terraform
+3. "YYY" from XXX - Use Terraform with Azure and Azure DevOps
 
 ## More than Certified in Terraform
 1. [Introduction and Prerequisites](mtc-terraform/section1.md)
