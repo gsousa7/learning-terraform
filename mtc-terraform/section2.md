@@ -102,7 +102,7 @@ In the  `docker_container` `section:
 In the Terraform state file there are some parameters
 - `serial` is a monotonically increasing integer associated with each Terraform state file. It represents the version or revision of the state file.
     - Helps Terraform manage and track changes to the state file over time. When changes are applied to the infrastructure, the serial number is incremented, allowing Terraform to detect conflicts and changes made by different users or runs
-- `lineage`
+- `lineage` is a unique identifier associated with a Terraform state file. It is used to distinguish different state files, especially in scenarios where multiple teams or individuals are working on the same infrastructure.
     -  Helps prevent conflicts and coordination issues when multiple users are managing the same infrastructure. Each Terraform run generates a new state file with a unique lineage, and Terraform uses this identifier to avoid overwriting or conflicting with other state files.
 
     The Terraform state file is not encrypted.
