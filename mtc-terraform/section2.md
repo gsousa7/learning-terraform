@@ -282,7 +282,7 @@ In a terraform file:
 The random string is only accessible and usable through the attribute `result`
 
 
-After adding a new resource (`random_string``) we must do a `terraform init`.
+After adding a new resource (`random_string`) we must do a `terraform init`.
 
 ## Multiple resources and Count<a name="multipleresourcescount"></a>
 The `count` argument allows to specify how many times we want for example to deploy.
