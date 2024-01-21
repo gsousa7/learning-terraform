@@ -46,7 +46,7 @@ Terraform locked file (`.terraform.lock.hcl`) allows to ensure that everyone who
 
 provider "docker" {}
 ```
-`~> 2.15.0` means that the version `2.15` (major and minor version) wont upgrade only the `0` (patch version). In this case we have the `0` if there wasn't when upgrading the `15` would be upgraded.
+`~> 2.15.0` means that the version `2.15` (major and minor version) wont upgrade, only the `0` (patch version). In this case we have the `0` if there wasn't when upgrading the `15` would be upgraded.
 
 To upgrade the patch version use
 `terraform init -upgrade`
@@ -63,7 +63,7 @@ To upgrade the patch version use
 
 ## Terraform Plan and Apply - Deep dive <a name="tfplanapply"></a>
 `terraform plan` describes what will be deployed and brief summary of configurations
-  We can also create a plan with `terraform plan -out=plan1` and apply it with `terraform apply plan1`. The content of the file `plan1` is encoded
+We can also create a plan with `terraform plan -out=plan1` and apply it with `terraform apply plan1`. The content of the file `plan1` is encoded
 `terraform destroy` will delete the existing infrastructure deployed
 `terraform fmt` will correct indentation and spacing
 
@@ -91,7 +91,7 @@ To upgrade the patch version use
     }
   }
 ```
-In the  `docker_container` `section:
+In the  `docker_container` section:
 - `name` is the name of the container
 - `image` is the name of the image that we will use. `docker_image.nodered_image` is referencing the resource `docker_image` that has the name `nodered_image` and the `latest` is the ID of the image
 - `port` is what ports we will use and mapping
@@ -137,7 +137,7 @@ Usage on the terraform file:
     name = "nodered/node-red:latest"
 }
 
-  "resource "docker_container" "nodered_container" {
+  resource "docker_container" "nodered_container" {
     name = "nodered"
     image = docker_image.nodered_image.latest
     ports {
@@ -162,7 +162,7 @@ We don't have to apply every time to access this information, we can simply use 
 
 ## Join function <a name="joinfunction"></a>
 
-`join` produces a string by concatenating together all elements of a given list of strings with the given delimiter: `join(separator, list)`. 
+`join` produces a string by concatenating together all elements of a given list of strings with the given delimiter: `join("separator", ["list-element1", "list-element2"])`. 
 Example:
 ```
 > join("-", ["foo", "bar", "baz"])

@@ -5,6 +5,9 @@ This is learning lab is separated in 3:
 2. "More than Certified in Terraform" from More than Certified in Udemy - Master Terraform
 3. "YYY" from XXX - Use Terraform with Azure and Azure DevOps
 
+## Terraform Foundations
+1. [Foundations](foundations/)
+
 ## More than Certified in Terraform
 1. [Introduction and Prerequisites](mtc-terraform/section1.md)
 2. [Terraform basics and Docker](mtc-terraform/section2.md)
