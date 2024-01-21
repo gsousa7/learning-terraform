@@ -13,6 +13,7 @@
 10. [Random resource](#randomresource)
 11. [Multiple resources and Count](#multipleresourcescount)
 12. [Splat expression](#splatexpression)
+13. [For loop](#forloop)
 
 ## Docker provider <a name="dockerprovider"></a>
 ```
@@ -395,3 +396,56 @@ In Terraform file:
 ```
 
 We can't use the splat operator in the `output` of the IP Address because it's trying to access multiple elements when we are trying to get a list when it's a tuple with 2 elements.
+
+## For loops <a name="forloop"></a>
+In `terraform console` we can use for loops. Example: `[for i in [1, 2, 3]: i + 1]` in this case we are incrementing the 1 value to the list.
+
+Using with a resource: 
+Print resources:
+`[for i in docker_container.nodered_container[*]: i.name]`
+
+Print ports:
+`[for i in docker_container.nodered_container[*]: i.ports[0]["external"]}`
+
+Usage in terraform file.
+```
+ terraform {
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 2.15.0"
+    }
+  }
+}
+
+  resource "docker_image" "nodered_image" {
+    name = "nodered/node-red:latest"
+}
+
+  resource "random_string" "random"{
+    count = 2
+    length = 4
+    special = false
+    upper = false
+  }
+
+  resource "docker_container" "nodered_container" {
+    count = 2
+    name = join("-", ["nodered", "random_string.random[count.index].result"])
+    image = docker_image.nodered_image.latest
+    ports {
+        internal = 1880 
+        external = 1880
+    }
+  }
+
+  output "Container-Name" {
+    value = docker_container.nodered_container[*].name
+    description = "Name of the nodered container"
+  }
+
+  output "IP-Address2" {
+    value = [for i in docker_container.nodered_container.[*]: join(":", [i.ip_address],i.ports[*]["external"])]
+    description = "IP address and external port of the nodered container"
+  }
+```
