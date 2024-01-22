@@ -64,7 +64,7 @@ To upgrade the patch version use
 ```
 
 ## Terraform Plan and Apply - Deep dive <a name="tfplanapply"></a>
-`terraform plan` describes what will be deployed and brief summary of configurations
+`terraform plan` describes what will be deployed and brief summary of configurations\
 We can also create a plan with `terraform plan -out=plan1` and apply it with `terraform apply plan1`. The content of the file `plan1` is encoded
 `terraform destroy` will delete the existing infrastructure deployed
 `terraform fmt` will correct indentation and spacing
@@ -109,7 +109,7 @@ In the Terraform state file there are some parameters
 - `lineage` is a unique identifier associated with a Terraform state file. It is used to distinguish different state files, especially in scenarios where multiple teams or individuals are working on the same infrastructure.
     -  Helps prevent conflicts and coordination issues when multiple users are managing the same infrastructure. Each Terraform run generates a new state file with a unique lineage, and Terraform uses this identifier to avoid overwriting or conflicting with other state files.
 
-    The Terraform state file is not encrypted.
+    The Terraform state file is not encrypted.\
     We can use the command `terraform show -json` to see the contents of the Terraform state file (resources deployed and it's metadata). We can also have a friendlier view with `terraform show -json | jq`
 
     To list the the deployed resources within the Terraform state file, we can see it with `terraform state list`
