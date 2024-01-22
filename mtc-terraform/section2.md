@@ -14,6 +14,7 @@
 11. [Multiple resources and Count](#multipleresourcescount)
 12. [Splat expression](#splatexpression)
 13. [For loop](#forloop)
+14. [Tainting and updating resources](#taintandupdate)
 
 ## Docker provider <a name="dockerprovider"></a>
 ```
@@ -34,7 +35,7 @@ Terraform handles all `*.tf` files as the same file
 `terraform init` initializes a working directory containing Terraform configuration files. It will automatically find, download and install the necessary providers plugins declared in the `*.tf` file
 
 ## Terraform Depency Lock <a name="tfdep"></a>
-Terraform locked file (`.terraform.lock.hcl`) allows to ensure that everyone who downloads the code from a source control (github) always has the same provider version
+Terraform locked file (`.terraform.lock.hcl`) allows to ensure that everyone who downloads the code from a source control (github, gitlab, etc.) always has the same provider version
 ```
  terraform {
   required_providers {
@@ -78,6 +79,8 @@ We can also create a plan with `terraform plan -out=plan1` and apply it with `te
     }
   }
 }
+
+provider "docker" {}
 
   resource "docker_image" "nodered_image" {
     name = "nodered/node-red:latest"
@@ -134,6 +137,8 @@ Usage on the terraform file:
   }
 }
 
+provider "docker" {}
+
   resource "docker_image" "nodered_image" {
     name = "nodered/node-red:latest"
 }
@@ -189,6 +194,8 @@ In a terraform file:
   }
 }
 
+provider "docker" {}
+
   resource "docker_image" "nodered_image" {
     name = "nodered/node-red:latest"
 }
@@ -225,6 +232,8 @@ In a terraform file:
     }
   }
 }
+
+provider "docker" {}
 
   resource "docker_image" "nodered_image" {
     name = "nodered/node-red:latest"
@@ -286,7 +295,7 @@ The random string is only accessible and usable through the attribute `result`
 After adding a new resource (`random_string`) we must do a `terraform init`.
 
 ## Multiple resources and Count<a name="multipleresourcescount"></a>
-The `count` argument allows to specify how many times we want for example to deploy.
+The `count` argument allows to specify how many times we want for example to deploy. When using count, to access the resource we must use the it's index `[0]`, `[1]`,`[2]`, etc.
 ```
  terraform {
   required_providers {
@@ -296,6 +305,8 @@ The `count` argument allows to specify how many times we want for example to dep
     }
   }
 }
+
+provider "docker" {}
 
   resource "docker_image" "nodered_image" {
     name = "nodered/node-red:latest"
@@ -357,6 +368,8 @@ In Terraform file:
   }
 }
 
+provider "docker" {}
+
   resource "docker_image" "nodered_image" {
     name = "nodered/node-red:latest"
 }
@@ -398,14 +411,14 @@ In Terraform file:
 We can't use the splat operator in the `output` of the IP Address because it's trying to access multiple elements when we are trying to get a list when it's a tuple with 2 elements.
 
 ## For loops <a name="forloop"></a>
-In `terraform console` we can use for loops. Example: `[for i in [1, 2, 3]: i + 1]` in this case we are incrementing the 1 value to the list.
+In `terraform console` we can use for loops. Example: `[for i in [1, 2, 3] : i + 1]` in this case we are incrementing the 1 value to the list.
 
 Using with a resource: 
 Print resources:
-`[for i in docker_container.nodered_container[*]: i.name]`
+`[for i in docker_container.nodered_container[*] : i.name]`
 
 Print ports:
-`[for i in docker_container.nodered_container[*]: i.ports[0]["external"]}`
+`[for i in docker_container.nodered_container[*] : i.ports[0]["external"]]`
 
 Usage in terraform file.
 ```
@@ -417,6 +430,8 @@ Usage in terraform file.
     }
   }
 }
+
+provider "docker" {}
 
   resource "docker_image" "nodered_image" {
     name = "nodered/node-red:latest"
@@ -445,7 +460,15 @@ Usage in terraform file.
   }
 
   output "IP-Address2" {
-    value = [for i in docker_container.nodered_container.[*]: join(":", [i.ip_address],i.ports[*]["external"])]
+    value = [for i in docker_container.nodered_container[*] : join(":", [i.ip_address], i.ports[*]["external"])]
     description = "IP address and external port of the nodered container"
   }
 ```
+
+## Tainting and updating resources <a name="taintandupdate"></a>
+Tainting a resource is a way to force that resource to be destroyed and reapplied. Essentially reloads the resource.
+The most common reason to taint a resource is to reapply some sort of configuration.
+
+To taint a resource use `terraform taint random_string.random[0]` if we do a `terraform plan` it will inform that 2 resources will be destroyed and created: the `random_string` and `nodered_container` because the container is using the random string as a suffix in it's name, therefore the need to destroy and create the container.
+
+To remove the taint (untaint) use `terraform untaint random_string.random[0]`
