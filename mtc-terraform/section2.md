@@ -15,6 +15,7 @@
 12. [Splat expression](#splatexpression)
 13. [For loop](#forloop)
 14. [Tainting and updating resources](#taintandupdate)
+15. [Terraform import](#tfimport)
 
 ## Docker provider <a name="dockerprovider"></a>
 ```
@@ -473,3 +474,69 @@ The most common reason to taint a resource is to reapply some sort of configurat
 To taint a resource use `terraform taint random_string.random[0]` if we do a `terraform plan` it will inform that 2 resources will be destroyed and created: the `random_string` and `nodered_container` because the container is using the random string as a suffix in it's name, therefore the need to destroy and create the container.
 
 To remove the taint (untaint) use `terraform untaint random_string.random[0]`
+
+## Terraform import <a name="tfimport"></a>
+When something is provisioned with being on the state (for example running `terraform apply -lock=false`) and there is a need to import.
+
+It's possible to import existing infrastructure that was created by some other means and bring it under Terraform management.
+
+To do so we need to declare it on the Terraform file.
+Example:
+```
+ terraform {
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 2.15.0"
+    }
+  }
+}
+
+provider "docker" {}
+
+  resource "docker_image" "nodered_image" {
+    name = "nodered/node-red:latest"
+}
+
+  resource "random_string" "random"{
+    count = 2
+    length = 4
+    special = false
+    upper = false
+  }
+
+  resource "docker_container" "nodered_container" {
+    count = 2
+    name = join("-", ["nodered", "random_string.random[count.index].result"])
+    image = docker_image.nodered_image.latest
+    ports {
+        internal = 1880 
+        external = 1880
+    }
+  }
+
+  resource "docker_container" "nodered_container2" {
+    name = nodered-abc123
+    image = docker_image.nodered_image.latest
+    ports {
+        internal = 1880 
+        external = 1880 
+    }
+  }
+
+  output "Container-Name" {
+    value = docker_container.nodered_container[*].name
+    description = "Name of the nodered container"
+  }
+
+  output "IP-Address2" {
+    value = [for i in docker_container.nodered_container[*] : join(":", [i.ip_address], i.ports[*]["external"])]
+    description = "IP address and external port of the nodered container"
+  }
+```
+
+To import it run `terraform import docker_container.nodered_container2 $(docker inspect --format="{{.ID}}" nodered-abc123)`
+
+Since the import in containers is expecting the ID we can't provide the name, to do so we have a command that fetches the ID
+
+It's recommended after a successful import that we destroy and create again to make sure that everything is ok.
