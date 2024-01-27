@@ -1,5 +1,6 @@
 # Terraform basics and Docker
 
+## Table of contents
 1. [Docker provider](#dockerprovider)
 2. [Terraform init](#tfinit)
 3. [Terraform Dependency Lock](#tfdep)
@@ -16,6 +17,8 @@
 13. [For loop](#forloop)
 14. [Tainting and updating resources](#taintandupdate)
 15. [Terraform import](#tfimport)
+16. [Terraform state rm](#tfstaterm)
+17. [Adding variables](#addingvars)
 
 ## Docker provider <a name="dockerprovider"></a>
 ```
@@ -480,7 +483,7 @@ When something is provisioned with being on the state (for example running `terr
 
 It's possible to import existing infrastructure that was created by some other means and bring it under Terraform management.
 
-To do so we need to declare it on the Terraform file.
+To do so we need to declare a resource on the Terraform file that wasn't created via Terraform, in this case `nodered_container2`
 Example:
 ```
  terraform {
@@ -540,3 +543,86 @@ To import it run `terraform import docker_container.nodered_container2 $(docker 
 Since the import in containers is expecting the ID we can't provide the name, to do so we have a command that fetches the ID
 
 It's recommended after a successful import that we destroy and create again to make sure that everything is ok.
+
+## Terraform state rm <a name="tfstaterm"></a>
+If a container is deleted manually or not involving Terraform we can delete it from the state with `terraform state rm random_string.random[1]`
+
+
+## Adding variables <a name="addingvars"></a>
+Variables allows to configure deployments dynamically and more briefly.
+It's possible to be have variables defined in one place, in the deployment file, command line and/or variables.tf
+
+When a variable is declared but it doesn't have any value when executing `terraform plan` it will prompt what value needs to store. Example
+```
+variable "good_var" {}
+```
+
+Using the previous example, it's possible to declare the value of the variable in the command line with `terraform plan -var good_var=123`
+
+It's possible to use with environment variables:
+```
+export TF_VAR_good_var=123
+```
+The prefix `TF_VAR` is mandatory followed by the name of the actual variable
+
+Examples of variable declaration by using the external port, internal port of the container and container count has a variable
+```
+ terraform {
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 2.15.0"
+    }
+  }
+}
+
+
+provider "docker" {}
+
+variable "ext_port" {
+  type = number
+  default = 1880
+}
+
+variable "int_port" {
+  type = number
+  default = 1880
+}
+
+variable "container_count" {
+  type = number
+  default = 1
+}
+
+  resource "docker_image" "nodered_image" {
+    name = "nodered/node-red:latest"
+}
+
+  resource "random_string" "random"{
+    count = var.container_count
+    length = 4
+    special = false
+    upper = false
+  }
+
+  resource "docker_container" "nodered_container" {
+    count = var.container_count
+    name = join("-", ["nodered", "random_string.random[count.index].result"])
+    image = docker_image.nodered_image.latest
+    ports {
+        internal = var.int_port
+        external = var.ext_port
+    }
+  }
+
+  output "Container-Name" {
+    value = docker_container.nodered_container[*].name
+    description = "Name of the nodered container"
+  }
+
+  output "IP-Address2" {
+    value = [for i in docker_container.nodered_container[*] : join(":", [i.ip_address], i.ports[*]["external"])]
+    description = "IP address and external port of the nodered container"
+  }
+```
+To access a variable it's the same has resource referencing in this case it's used with `var.name_of_var`
