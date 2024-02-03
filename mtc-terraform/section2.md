@@ -19,6 +19,22 @@
 15. [Terraform import](#tfimport)
 16. [Terraform state rm](#tfstaterm)
 17. [Adding variables](#addingvars)
+18. [Variable validation](#varvalidation)
+19. [Variables and Output files](#varsandoutputfiles)
+20. [Sensitive variables and .tfvars files](#sensitivevarsandtfvarsfile)
+21. [Variable definition precedence](#vardefinition)
+22. [Hiding sensitive variables from CLI](#hidevarsfromcli)
+23. [Bind mount and Local-exec](#bindmountandlocalexec)
+24. [Using local values](#localvalues)
+25. [Min and Max functions and Expand expression](#minxmaxexpand)
+26. [Path reference and String interpolation](#pathrefandstring)
+27. [Maps and Lookups: Image variable](#mapsandlookupsimgvar)
+28. [Maps and Lookups: External ports](#mapsandlookupsextports)
+29. [Terraform workspaces](#tfworkspaces)
+30. [Referencing Workspaces](#)
+31. [Using Map keys instead of Lookups](#mapsoverlookups)
+32. [Knowledge consolidation](#knowledgeconsolidation)
+
 
 ## Docker provider <a name="dockerprovider"></a>
 ```
@@ -563,7 +579,7 @@ It's possible to use with environment variables:
 ```
 export TF_VAR_good_var=123
 ```
-The prefix `TF_VAR` is mandatory followed by the name of the actual variable
+The prefix `TF_VAR` is mandatory followed by the name of the actual variable when using it has a environment variable
 
 Examples of variable declaration by using the external port, internal port of the container and container count has a variable
 ```
@@ -626,3 +642,104 @@ variable "container_count" {
   }
 ```
 To access a variable it's the same has resource referencing in this case it's used with `var.name_of_var`
+
+## Variable validation <a name="varvalidation"></a>
+Locking variable, in this case we are ensuring that the internal port of the container is always 1880 if someone changes the default value of the variable or tries to override it will prompt a error.
+```
+ terraform {
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 2.15.0"
+    }
+  }
+}
+
+
+provider "docker" {}
+
+variable "ext_port" {
+  type = number
+  default = 1880
+    default = 1880
+  validation {
+    condition = var.ext_port <= 65535 & var.ext_port > 0
+    error_message = "External port must be  in the valid port range 0 - 65535."
+  }
+}
+
+variable "int_port" {
+  type = number
+  default = 1880
+  validation {
+    condition = var.int_port == 1880
+    error_message = "Internal port must be 1880"
+  }
+}
+
+variable "container_count" {
+  type = number
+  default = 1
+}
+
+  resource "docker_image" "nodered_image" {
+    name = "nodered/node-red:latest"
+}
+
+  resource "random_string" "random"{
+    count = var.container_count
+    length = 4
+    special = false
+    upper = false
+  }
+
+  resource "docker_container" "nodered_container" {
+    count = var.container_count
+    name = join("-", ["nodered", "random_string.random[count.index].result"])
+    image = docker_image.nodered_image.latest
+    ports {
+        internal = var.int_port
+        external = var.ext_port
+    }
+  }
+
+  output "Container-Name" {
+    value = docker_container.nodered_container[*].name
+    description = "Name of the nodered container"
+  }
+
+  output "IP-Address2" {
+    value = [for i in docker_container.nodered_container[*] : join(":", [i.ip_address], i.ports[*]["external"])]
+    description = "IP address and external port of the nodered container"
+  }
+```
+
+
+
+## Variables and Output files <a name="varsandoutputfiles"></a>
+
+## Sensitive variables and .tfvars files <a name="sensitivevarsandtfvarsfile"></a>
+
+## Variable definition precedence <a name="vardefinition"></a>
+
+## Hiding sensitive variables from CLI <a name="hidevarsfromcli"></a>
+
+## Bind mount and Local-exec <a name="bindmountandlocalexec"></a>
+
+## Using local values <a name="localvalues"></a>
+
+## Min and Max functions and Expand expression <a name="minxmaxexpand"></a>
+
+## Path reference and String interpolation <a name="pathrefandstring"></a>
+
+## Maps and Lookups: Image variable <a name="mapsandlookupsimgvar"></a>
+
+## Maps and Lookups: External ports <a name="mapsandlookupsextports"></a>
+
+## Terraform workspaces <a name="tfworkspaces"></a>
+
+## Referencing Workspaces <a name=""></a>
+
+## Using Map keys instead of Lookups <a name="mapsoverlookups"></a>
+
+## Knowledge consolidation <a name="knowledgeconsolidation"></a>
