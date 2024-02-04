@@ -31,7 +31,7 @@
 27. [Maps and Lookups: Image variable](#mapsandlookupsimgvar)
 28. [Maps and Lookups: External ports](#mapsandlookupsextports)
 29. [Terraform workspaces](#tfworkspaces)
-30. [Referencing Workspaces](#)
+30. [Referencing Workspaces](#refworkspace)
 31. [Using Map keys instead of Lookups](#mapsoverlookups)
 32. [Knowledge consolidation](#knowledgeconsolidation)
 
@@ -714,15 +714,66 @@ variable "container_count" {
   }
 ```
 
-
-
 ## Variables and Output files <a name="varsandoutputfiles"></a>
+Since all terraform files (all files that end with `*.tf`) are handled has one and are targeted all has one file when `terraform apply` we can separate variables, outputs and resources this can improve readability and organize the structure
+
 
 ## Sensitive variables and .tfvars files <a name="sensitivevarsandtfvarsfile"></a>
+Usually the `*.tfvars` must be in `.gitignore`
+We can define the variable in `vars.tf` but we can declare what value is stored in `vars.tfvars`. Example:
+
+`vars.tf`:
+```
+variable "ext_port" {
+  type = number
+  validation {
+    condition = var.int_port == 1880
+    error_message = "Internal port must be 1880"
+  }
+}
+```
+
+`vars.tfvars`:
+```
+ext_port = 1880
+```
+
+In conclusion the `default` parameter is not on the `vars.tf` and it's declared in `vars.tfvars` through key:value
+
 
 ## Variable definition precedence <a name="vardefinition"></a>
+If we have multiple `*.tfvars` file we can declare which ones we can use (template infrastructure: web apps, virtual machines, network, etc. all the same but names, ports, IPs and labels are different)
+
+To use a different `*.tfvars` it's possible to declare a specified file with `terraform plan --var-file homelab.tfvars`.
+
+It's possible to override a variable in the CLI with `terraform plan -var ext_port=2000`
+Anything that is specified/declared in CLI will override what is declared in the terraform files.
 
 ## Hiding sensitive variables from CLI <a name="hidevarsfromcli"></a>
+To hide the value of the variables when running an apply or plan through CLI or CI/CD add the `sensitive` parameter in the `vars.tf`
+```
+variable "ext_port" {
+  type = number
+  sensitive = true
+  validation {
+    condition = var.int_port == 1880
+    error_message = "Internal port must be 1880"
+  }
+}
+```
+
+It's mandatory that when a variable is printed to add the `sensitive` parameter in it, in this case the `output` of the IP Address:
+```
+ output "IP-Address2" {
+    value = [for i in docker_container.nodered_container[*] : join(":", [i.ip_address], i.ports[*]["external"])]
+    description = "IP address and external port of the nodered container"
+    sensitive = true
+  }
+```
+
+When running `terraform output` and `terraform apply` in this case it will print `ip-address = <sensitive>`
+When running `var.ext_port` in `terraform console` and `terraform show |grep external` it will print `(sensitive)`
+However the command `terraform show |grep external` shows `sensitive` but by accessing the state file will show the value
 
 ## Bind mount and Local-exec <a name="bindmountandlocalexec"></a>
 
@@ -738,7 +789,7 @@ variable "container_count" {
 
 ## Terraform workspaces <a name="tfworkspaces"></a>
 
-## Referencing Workspaces <a name=""></a>
+## Referencing Workspaces <a name="refworkspace"></a>
 
 ## Using Map keys instead of Lookups <a name="mapsoverlookups"></a>
 
