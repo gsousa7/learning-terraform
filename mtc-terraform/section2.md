@@ -776,6 +776,54 @@ When running `var.ext_port` in `terraform console` and `terraform show |grep ext
 However the command `terraform show |grep external` shows `sensitive` but by accessing the state file will show the value
 
 ## Bind mount and Local-exec <a name="bindmountandlocalexec"></a>
+We need a volume on docker container for the data that the container creates survives when the container is stopped or deleted with `local-exec`.
+
+`local-exec` allows the execution a command. This is a last-resort method, other alternative is using Ansible, since Ansible is idempotent 
+
+```
+ terraform {
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 2.15.0"
+    }
+  }
+}
+
+
+provider "docker" {}
+
+resource "null_resource" "dockervol" {
+  provisioner "local-exec" {
+    command = "mkdir /opt/noderedvol && sudo chown -R 1000:1000 /opt/noderedvol/"
+  }
+}
+
+  resource "docker_image" "nodered_image" {
+    name = "nodered/node-red:latest"
+}
+
+  resource "random_string" "random"{
+    count = var.container_count
+    length = 4
+    special = false
+    upper = false
+  }
+
+  resource "docker_container" "nodered_container" {
+    count = var.container_count
+    name = join("-", ["nodered", "random_string.random[count.index].result"])
+    image = docker_image.nodered_image.latest
+    volumes {
+      container_path = "/data"
+      host_path = "/opt/noderedvol/"
+    }
+    ports {
+        internal = var.int_port
+        external = var.ext_port
+    }
+  }
+```
 
 ## Using local values <a name="localvalues"></a>
 
