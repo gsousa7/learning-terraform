@@ -827,7 +827,7 @@ resource "null_resource" "dockervol" {
 
 ## Using local values <a name="localvalues"></a>
 A local value assigns a name to an expression, so you can use the name multiple times within a module instead of repeating the expression.
-Check [Local Values](mtc-terraform/02-terraform-basics-docker/22-Local-Values)
+Check [Local Values](02-terraform-basics-docker/22-Local-Values)
 
 ## Min and Max functions and Expand expression <a name="minxmaxexpand"></a>
 
