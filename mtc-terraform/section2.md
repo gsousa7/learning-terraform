@@ -830,8 +830,21 @@ A local value assigns a name to an expression, so you can use the name multiple 
 Check [Local Values](02-terraform-basics-docker/22-Local-Values)
 
 ## Min and Max functions and Expand expression <a name="minxmaxexpand"></a>
+`max` function takes one or more numbers and returns the greatest number from the given numbers
+`min` is the same has `max` but returns the lowest number
+
+In terraform console if we execute `max(1, 2, 3)` the returned value will be 3, however if we execute giving a list `max([10, 20, 30])` it will give an error to use the list we must use the expand operator (`...`): `max([10, 20, 30]...)`
+
+Check [Min Max spread](02-terraform-basics-docker/23-Min-Max-Spread)
 
 ## Path reference and String interpolation <a name="pathrefandstring"></a>
+Instead of using full paths we can use the variables assigned to them.
+
+For example:
+Variable `path.cwd` is storing the content `/home/user/env/terraform` and we want to access the directory `/home/user/env/terraform/noderedvol`, in a terraform file (volumes section of the container) instead of declaring the full path we can use `${path.cwd}/noderedvol`.
+
+`path.cwd` and `path.root` usually are the same. These variables don't need to be declared since they exist by default
+
 
 ## Maps and Lookups: Image variable <a name="mapsandlookupsimgvar"></a>
 
